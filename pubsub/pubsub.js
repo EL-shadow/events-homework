@@ -6,12 +6,19 @@ function PubSub(){
 };
 
 /**
+ * Объект - список слушателей по событию
+ */
+PubSub.prototype.listeners={};
+
+/**
  * Функция подписки на событие
  * @param  {string} eventName имя события
  * @param  {function} handler функция которая будет вызвана при возникновении события
  * @return {function}         ссылка на handler
  */
 PubSub.prototype.subscribe = function(eventName, handler) {
+    if (this.listeners.hasOwnProperty(eventName)==false) this.listeners[eventName]=[];
+    this.listeners[eventName].push(handler);
     return handler;
 };
 
@@ -22,6 +29,13 @@ PubSub.prototype.subscribe = function(eventName, handler) {
  * @return {function}         ссылка на handler
  */
 PubSub.prototype.unsubscribe = function(eventName, handler) {
+    if (this.listeners.hasOwnProperty(eventName)){
+        for (var i=0;i<this.listeners[eventName].length;i++){
+            if (this.listeners[eventName][i]===handler){
+                this.listeners[eventName].splice(this.listeners[eventName][i],1);
+            }
+        }
+    }
     return handler;
 };
 
@@ -32,7 +46,13 @@ PubSub.prototype.unsubscribe = function(eventName, handler) {
  * @return {bool}             удачен ли результат операции
  */
 PubSub.prototype.publish = function(eventName, data) {
-    return false;
+    if (this.listeners.hasOwnProperty(eventName)){
+        for (var i=0;i<this.listeners[eventName].length;i++){
+            this.listeners[eventName][i](data);
+        }
+        return true;
+    }
+    else return false;
 };
 
 /**
@@ -41,26 +61,36 @@ PubSub.prototype.publish = function(eventName, data) {
  * @return {bool}             удачен ли результат операции
  */
 PubSub.prototype.off = function(eventName) {
-    return false;
+    return delete this.listeners[eventName];
 };
 
 /**
  * @example
  *
- * PubSub.subscribe('click', function(event, data) { console.log(data) });
- * var second = PubSub.subscribe('click', function(event, data) { console.log(data) });
+ * var pubSub = new PubSub();
+ *
+ * pubSub.subscribe('click', function(event, data) { console.log(data) });
+ * var second = pubSub.subscribe('click', function(event, data) { console.log(data) });
  *
  * //Отписать одну функцию от события 'click':
- * PubSub.unsubscribe('click', second);
+ * pubSub.unsubscribe('click', second);
  *
  * //Отписать группу функций от события 'click'
- * PubSub.off('click');
+ * pubSub.off('click');
  */
 
 /*
     Дополнительный вариант — без явного использования глобального объекта
     нужно заставить работать методы верно у любой функции
  */
+
+var pubSub = new PubSub();
+window.Function.prototype.subscribe=function(eventName){
+    pubSub.subscribe(eventName,this);
+};
+window.Function.prototype.unsubscribe=function(eventName){
+    pubSub.unsubscribe(eventName,this);
+}
 
 function foo(event, data) {
     //body…
