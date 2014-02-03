@@ -48,7 +48,7 @@ PubSub.prototype.unsubscribe = function(eventName, handler) {
 PubSub.prototype.publish = function(eventName, data) {
     if (this.listeners.hasOwnProperty(eventName)){
         for (var i=0;i<this.listeners[eventName].length;i++){
-            this.listeners[eventName][i](data);
+            setTimeout(this.listeners[eventName][i](data),0);
         }
         return true;
     }
