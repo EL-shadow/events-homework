@@ -61,7 +61,8 @@ PubSub.prototype.publish = function(eventName, data) {
  * @return {bool}             удачен ли результат операции
  */
 PubSub.prototype.off = function(eventName) {
-    return delete this.listeners[eventName];
+    this.listeners[eventName]=[];
+    return true;
 };
 
 /**
@@ -85,10 +86,10 @@ PubSub.prototype.off = function(eventName) {
  */
 
 var pubSub = new PubSub();
-window.Function.prototype.subscribe=function(eventName){
+Function.prototype.subscribe=function(eventName){
     pubSub.subscribe(eventName,this);
 };
-window.Function.prototype.unsubscribe=function(eventName){
+Function.prototype.unsubscribe=function(eventName){
     pubSub.unsubscribe(eventName,this);
 }
 
